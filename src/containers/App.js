@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import classes from './App.css';
 import Persons from '../components/Persons/Persons';
 import Cockpit from '../components/Cockpit/Cockpit';
+import withClass from '../hoc/withClass';
+import Aux from '../hoc/Aux';
+import AuthContext from '../context/auth-context';
 
 class App extends Component {
   constructor(props) {
@@ -15,6 +18,8 @@ class App extends Component {
       ],
       otherState: 'some other value',
       showPersons: false,
+      showCockpit: true,
+      auth: false,
     };
   }
 
@@ -30,6 +35,15 @@ class App extends Component {
 
   componentDidMount() {
     console.log('App.js, ComponentDidMount');
+  }
+
+  componentDidUpdate() {
+    console.log('App.js, componentDidUpdate');
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    console.log('App.js, shouldComponentUpdate');
+    return true;
   }
 
   nameChangedHandler = (event, id) => {
@@ -63,6 +77,10 @@ class App extends Component {
     this.setState({ showPersons: !doesShow });
   };
 
+  loginHandler = () => {
+    this.setState({ auth: true });
+  };
+
   render() {
     console.log('App.js, render ');
     let persons = null;
@@ -78,18 +96,29 @@ class App extends Component {
     }
 
     return (
-      <div className={classes.App}>
-        <Cockpit
-          title={this.props.appTitle}
-          persons={this.state.persons}
-          showPersons={this.state.showPersons}
-          clicked={this.togglePersonsHandler}
-        />
-        {persons}
-      </div>
+      <Aux classes={classes.App}>
+        <button onClick={() => this.setState({ showCockpit: false })}>
+          Remove
+        </button>
+        <AuthContext.Provider
+          value={{ authenticated: this.state.auth, login: this.loginHandler }}
+        >
+          {this.state.showCockpit ? (
+            <Cockpit
+              title={this.props.appTitle}
+              personsLength={this.state.persons.length}
+              showPersons={this.state.showPersons}
+              clicked={this.togglePersonsHandler}
+            />
+          ) : (
+            ''
+          )}
+          {persons}
+        </AuthContext.Provider>
+      </Aux>
     );
     // return React.createElement('div', {className: 'App'}, React.createElement('h1', null, 'Does this work now?'));
   }
 }
 
-export default App;
+export default withClass(App, classes.App);
